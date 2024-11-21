@@ -72,16 +72,16 @@ class Game {
             { file_path: "cars/bus_2", x: -6.3, z: this.intersections.north[0], dir: "north", speed: this.fast, name: "37" },
             // { file_path: "cars/pickup_1", x: -6.7, z: this.intersections.south[3], dir: "south", speed: this.fast, name: "38" },
         ];
-        this.labelData = [
-            { path: "circlebuilding.svg", position: new THREE.Vector3(-4.9, 2.7,  1.9),  name: "Genel Müdürlük", link: "http://localhost:3000" },
-            { path: "coffeeshop.svg",     position: new THREE.Vector3(2.6,  0.9,  2.4),  name: "Kahve Molası",   link: "http://localhost:3000" },
-            { path: "anaacentem.svg",     position: new THREE.Vector3(-1.5, 1.7,  2.25), name: "Ana Acentem",    link: "http://localhost:3000" },
-            { path: "hospital.svg",       position: new THREE.Vector3(1,    1.2,  2.3),  name: "Ana Sağlık",     link: "http://localhost:3000/#anlasmali-kurumlar" },
-            { path: "factory.svg",   position: new THREE.Vector3(5,    0.8,  1.7),  name: "Ana Servis", link: "http://localhost:3000/#anlasmali-kurumlar" },
-            { path: "phone.svg",     position: new THREE.Vector3(-3.8, 0.35, 2.5),  name: "İletişim",   link: "http://localhost:3000/#iletisim" },
-            { path: "muhtarlik.svg", position: new THREE.Vector3(-1,   0.8,  -3.5), name: "Muhtarlık",  link: "http://localhost:3000" },
-            { name: "Anasayfa" },
-        ];
+        // this.labelData = [
+        //     { path: "circlebuilding.svg", position: new THREE.Vector3(-4.9, 2.7,  1.9),  name: "Genel Müdürlük", link: "http://localhost:3000" },
+        //     { path: "coffeeshop.svg",     position: new THREE.Vector3(2.6,  0.9,  2.4),  name: "Kahve Molası",   link: "http://localhost:3000" },
+        //     { path: "anaacentem.svg",     position: new THREE.Vector3(-1.5, 1.7,  2.25), name: "Ana Acentem",    link: "http://localhost:3000" },
+        //     { path: "hospital.svg",       position: new THREE.Vector3(1,    1.2,  2.3),  name: "Ana Sağlık",     link: "http://localhost:3000/#anlasmali-kurumlar" },
+        //     { path: "factory.svg",   position: new THREE.Vector3(5,    0.8,  1.7),  name: "Ana Servis", link: "http://localhost:3000/#anlasmali-kurumlar" },
+        //     { path: "phone.svg",     position: new THREE.Vector3(-3.8, 0.35, 2.5),  name: "İletişim",   link: "http://localhost:3000/#iletisim" },
+        //     { path: "muhtarlik.svg", position: new THREE.Vector3(-1,   0.8,  -3.5), name: "Muhtarlık",  link: "http://localhost:3000" },
+        //     { name: "Anasayfa" },
+        // ];
         this.carsGroup = [];
         this.planeGroup = new THREE.Group();
         this.size = new THREE.Vector3();
@@ -162,28 +162,28 @@ class Game {
         this.model.add(mesh);
     };
     createSprite = () => {
-        this.labelData.forEach((label) => {
-            if (label.path) {
-                const map = this.textureLoader.load(`/img/${label.path}`);
-                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map }));
-                sprite.name = label.name;
-                sprite.position.copy(label.position);
-                sprite.scale.set(0.8, 0.23, 1);
-                this.createVideoMesh(label.position);
-                this.model.add(sprite);
-            }
-        });
+        // this.labelData.forEach((label) => {
+        //     if (label.path) {
+        //         const map = this.textureLoader.load(`/img/${label.path}`);
+        //         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map }));
+        //         sprite.name = label.name;
+        //         sprite.position.copy(label.position);
+        //         sprite.scale.set(0.8, 0.23, 1);
+        //         this.createVideoMesh(label.position);
+        //         this.model.add(sprite);
+        //     }
+        // });
     };
     addSpritesOnClick() {
-        this.labelData.forEach((label) => {
-            const labelObjects = this.scene.getObjectsByProperty("name", label.name);
-            labelObjects.forEach((labelclone) => {
-                this.onClick(labelclone, () => {
-                    this.moveToNextLabel(label.name);
-                    setTimeout(() => window.open(label.link, "_blank"), 1000);
-                });
-            });
-        });
+        // this.labelData.forEach((label) => {
+        //     const labelObjects = this.scene.getObjectsByProperty("name", label.name);
+        //     labelObjects.forEach((labelclone) => {
+        //         this.onClick(labelclone, () => {
+        //             this.moveToNextLabel(label.name);
+        //             setTimeout(() => window.open(label.link, "_blank"), 1000);
+        //         });
+        //     });
+        // });
     }
     distanceToSquared(a, b) {
         return (b.x - a.x) ** 2 + (b.z - a.z) ** 2;
@@ -451,6 +451,7 @@ class Game {
             this.isMoving = true;
         }
     }
+
     init() {
         this.setupRenderer();
         this.setupCamera();
@@ -460,14 +461,14 @@ class Game {
         // this.setupStats();
         this.loadCity();
 
-        document.getElementById("btn-next").onclick = () => {
-            this.activeLabel = (this.activeLabel + 1) % this.labelData.length;
-            this.moveToNextLabel(this.labelData[this.activeLabel % this.labelData.length].name);
-        };
-        document.getElementById("btn-prev").onclick = () => {
-            this.activeLabel = (this.activeLabel - 1 + this.labelData.length) % this.labelData.length;
-            this.moveToNextLabel(this.labelData[this.activeLabel].name);
-        };
+        // document.getElementById("btn-next").onclick = () => {
+        //     this.activeLabel = (this.activeLabel + 1) % this.labelData.length;
+        //     this.moveToNextLabel(this.labelData[this.activeLabel % this.labelData.length].name);
+        // };
+        // document.getElementById("btn-prev").onclick = () => {
+        //     this.activeLabel = (this.activeLabel - 1 + this.labelData.length) % this.labelData.length;
+        //     this.moveToNextLabel(this.labelData[this.activeLabel].name);
+        // };
         window.addEventListener("resize", this.onWindowResize.bind(this));
         window.addEventListener("wheel", this.zoomHandler.bind(this));
         document.addEventListener("touchstart", this.handlePinchStart.bind(this), { passive: false });
@@ -495,4 +496,4 @@ class Game {
     }
 }
 
-const game = new Game();
+new Game();
