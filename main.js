@@ -4,6 +4,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { lerp } from "three/src/math/MathUtils";
 // import Stats from "three/examples/jsm/libs/stats.module";
+//
+// TODO:
+// make a traffic light system for the cars
+// make use of random cars in the begining (not the same pattern everytime)
 
 class Game {
     constructor() {
@@ -210,7 +214,7 @@ class Game {
     loadVideoTexture() {
         // const video = document.getElementById("billBoardVideo");
         const tex = this.textureLoader.load('/img/billBoard.jpeg');
-        const  material2 = new THREE.MeshBasicMaterial({map: tex})
+        const material2 = new THREE.MeshBasicMaterial({ map: tex })
         const vplane = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.7), material2);
         this.onClick(vplane, () => {
             window.open("http://localhost:3000", "_blank");
@@ -224,7 +228,7 @@ class Game {
     loadCity() {
         this.loadCars();
         this.loader.load(
-            "/gltf/city.glb",
+            "/gltf/city-snow.glb",
             (gltf) => {
                 this.model = gltf.scene;
                 this.model.rotation.y = Math.PI / 2;
@@ -273,17 +277,17 @@ class Game {
     }
     updatePlanes() {
         this.planeGroup.children.forEach((plane) => {
-            if (this.camera.position.z  < plane.position.z - (this.size.z/3) ) {
+            if (this.camera.position.z < plane.position.z - (this.size.z / 3)) {
                 plane.position.setZ(plane.position.z - (this.size.z * this.num_z_planes));
             }
-            if (this.camera.position.z  > plane.position.z + (this.size.z * this.num_z_planes) - this.size.z/3 ) {
+            if (this.camera.position.z > plane.position.z + (this.size.z * this.num_z_planes) - this.size.z / 3) {
                 plane.position.setZ(plane.position.z + (this.size.z * this.num_z_planes));
             }
 
-            if (this.camera.position.x  < plane.position.x - (this.size.x/3) ) {
+            if (this.camera.position.x < plane.position.x - (this.size.x / 3)) {
                 plane.position.setX(plane.position.x - this.size.x * this.num_x_planes);
             }
-            if (this.camera.position.x  > plane.position.x + (this.size.x * this.num_x_planes) - this.size.x/3 ) {
+            if (this.camera.position.x > plane.position.x + (this.size.x * this.num_x_planes) - this.size.x / 3) {
                 plane.position.setX(plane.position.x + (this.size.x * this.num_x_planes));
             }
         });
@@ -381,6 +385,71 @@ class Game {
             }
         }
     }
+    setupSnow() {
+        this.N = 1000;
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(15, 15, 2, 15, 15, 15);
+        gradient.addColorStop(0, 'white');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 32, 32);
+
+        const snowflakeTexture = new THREE.CanvasTexture(canvas);
+
+        // Create snowflake positions and speeds
+        const positions = new Float32Array(this.N * 3);
+        const speeds = new Float32Array(this.N);
+
+        for (let i = 0; i < this.N; i++) {
+            const index = i * 3;
+            positions[index] = THREE.MathUtils.randFloatSpread(50); // x
+            positions[index + 1] = THREE.MathUtils.randFloatSpread(10) + 10; // y
+            positions[index + 2] = THREE.MathUtils.randFloatSpread(50); // z
+            speeds[i] = 0.1 + Math.random() * 0.2; // Fall speed
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.userData.speeds = speeds; // Store speeds for animation
+
+        const material = new THREE.PointsMaterial({
+            color: 'white',
+            size: 1,
+            map: snowflakeTexture,
+            transparent: true,
+            depthWrite: false,
+        });
+
+        this.snow = new THREE.Points(geometry, material);
+        this.scene.add(this.snow);
+    }
+    updateSnow() {
+        const positions = this.snow.geometry.attributes.position.array;
+        const speeds = this.snow.geometry.userData.speeds;
+        const count = this.N;//speeds.length;
+        const time = this.clock.getElapsedTime();
+
+        for (let i = 0; i < count; i++) {
+            const index = i * 3;
+            positions[index] += 0.1 * Math.sin(i / 30 + time / 40); // Sway in x
+            positions[index + 1] -= speeds[i]; // Fall in y
+            positions[index + 2] += 0.1 * Math.cos(i / 50 + time / 20); // Sway in z
+
+            // Reset snowflake if it falls below the ground
+            if (positions[index + 1] < 0) {
+                positions[index] = THREE.MathUtils.randFloatSpread(50);
+                positions[index + 1] = THREE.MathUtils.randFloatSpread(10) + 10;
+                positions[index + 2] = THREE.MathUtils.randFloatSpread(50);
+            }
+        }
+
+        this.snow.geometry.attributes.position.needsUpdate = true; // Notify Three.js of changes
+    }
+
     handlePinchEnd(event) {
         if (event.touches.length < 2) {
             this.initialDistance = null;
@@ -453,6 +522,7 @@ class Game {
     }
 
     init() {
+        this.clock = new THREE.Clock(true);
         this.setupRenderer();
         this.setupCamera();
         this.setupControls();
@@ -460,6 +530,7 @@ class Game {
         this.setupLights();
         // this.setupStats();
         this.loadCity();
+        this.setupSnow();
 
         // document.getElementById("btn-next").onclick = () => {
         //     this.activeLabel = (this.activeLabel + 1) % this.labelData.length;
@@ -484,6 +555,7 @@ class Game {
         this.updatePlanes();
         this.controls.update();
         this.updateLights();
+        this.updateSnow();
         // this.stats.update();
         this.renderer.render(this.scene, this.camera);
         if (this.isMoving) {
