@@ -386,7 +386,7 @@ class Game {
         }
     }
     setupSnow() {
-        this.N = 1000;
+        this.N = 100;
         const canvas = document.createElement('canvas');
         canvas.width = 32;
         canvas.height = 32;
@@ -530,7 +530,7 @@ class Game {
         this.setupLights();
         // this.setupStats();
         this.loadCity();
-        // this.setupSnow();
+        this.setupSnow();
 
         // document.getElementById("btn-next").onclick = () => {
         //     this.activeLabel = (this.activeLabel + 1) % this.labelData.length;
@@ -555,7 +555,7 @@ class Game {
         this.updatePlanes();
         this.controls.update();
         this.updateLights();
-        // this.updateSnow();
+        this.updateSnow();
         // this.stats.update();
         this.renderer.render(this.scene, this.camera);
         if (this.isMoving) {
