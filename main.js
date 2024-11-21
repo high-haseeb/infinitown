@@ -48,7 +48,7 @@ class Game {
         };
         this.carsData = [
             { file_path: "cars/ambulance", x: 0, z: 3.55, dir: "west", speed: this.medium, name: "1" },
-            { file_path: "cars/tow_1", x: 4, z: 3.55, dir: "west", speed: this.medium, name: "2" },
+            { file_path: "cars/snow-truck-1", x: 4, z: 3.55, dir: "west", speed: this.medium, name: "2" },
             { file_path: "cars/tow_2", x: -4, z: 3.55, dir: "west", speed: this.medium, name: "3" },
             { file_path: "cars/ambulance", x: 5, z: 3.15, dir: "east", speed: this.fast, name: "4" },
             { file_path: "cars/car_1", x: 2, z: 3.15, dir: "east", speed: this.fast, name: "5" },
@@ -60,12 +60,12 @@ class Game {
             { file_path: "cars/pickup_1", x: 0, z: 0.2, dir: "west", speed: this.fast, name: "11" },
             { file_path: "cars/container_3", x: 3, z: 0.2, dir: "west", speed: this.fast, name: "12" },
             { file_path: "cars/container_2", x: 3, z: -0.2, dir: "east", speed: this.slow, name: "13" },
-            { file_path: "cars/truck_2", x: -3, z: -0.2, dir: "east", speed: this.slow, name: "14" },
+            { file_path: "cars/snow-truck-1", x: -3, z: -0.2, dir: "east", speed: this.slow, name: "14" },
             { file_path: "cars/container_1", x: 0, z: -2.36, dir: "east", speed: this.fast, name: "25" },
             { file_path: "cars/bus_3", x: 3, z: -2.36, dir: "east", speed: this.fast, name: "26" },
             { file_path: "cars/suv_2", x: -3, z: -2.36, dir: "east", speed: this.fast, name: "27" },
             { file_path: "cars/suv_2", x: -2, z: -2.0, dir: "west", speed: this.fast, name: "28" },
-            { file_path: "cars/pickup_2", x: 1, z: -2.0, dir: "west", speed: this.fast, name: "29" },
+            { file_path: "cars/snow-truck-1", x: 1, z: -2.0, dir: "west", speed: this.fast, name: "29" },
             { file_path: "cars/car_4", x: 4, z: -2.0, dir: "west", speed: this.fast, name: "30" },
             { file_path: "cars/car_4", x: 4, z: 6.8, dir: "east", speed: this.fast, name: "31" },
             { file_path: "cars/truck_2", x: 0, z: 6.8, dir: "east", speed: this.fast, name: "32" },
