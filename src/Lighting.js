@@ -24,8 +24,6 @@ class Lighting {
         hemisphereLight.position.set(0, 10, 0);
         scene.add(hemisphereLight);
 
-        const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 2);
-        scene.add(hemisphereLightHelper);
 
         const loader = new RGBELoader();
         loader.load(
@@ -33,7 +31,7 @@ class Lighting {
             (texture) => {
                 texture.mapping = THREE.EquirectangularReflectionMapping;
                 scene.environment = texture;
-                scene.background = texture;
+                // scene.background = texture;
                 renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 renderer.toneMappingExposure = 1;
             },

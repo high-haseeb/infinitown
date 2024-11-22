@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import Loader from "./LoadingScreen";
+import LoadingScreen from "./LoadingScreen";
 import Lighting from "./Lighting";
 import { lerp } from "three/src/math/MathUtils";
 
 import Controls from "./Controls";
+import Helicopter from "./Helicopter";
 
 class Game {
 
@@ -16,9 +17,23 @@ class Game {
         new Lighting(this.scene, this.renderer);
 
         this.controls = new Controls(this.camera, this.renderer);
-        this.test()
+
+        // gltf draco loader
+        this.loader = new GLTFLoader();
+        this.loadingScreen = new LoadingScreen();
+        this.dracoLoader = new DRACOLoader();
+        this.dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+        this.loader.setDRACOLoader(this.dracoLoader);
+        this.clock = new THREE.Clock(true);
+
+        this.test();
+        this.helione = new Helicopter(this.scene, this.loader, 50, 50, -100, 'orange');
+        this.helitwo = new Helicopter(this.scene, this.loader, 80, 100, -50, 'yellow', false);
+        this.loadingScreen.hide();
 
 
+
+        this.renderer.setAnimationLoop(this.update.bind(this));
         window.addEventListener("resize", this.onWindowResize.bind(this));
     }
 
@@ -48,13 +63,11 @@ class Game {
         // this.renderer.shadowMap.enabled = true;
         // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         // this.renderer.setClearColor(this.fogColor);
-        this.renderer.setAnimationLoop(this.update.bind(this));
         document.body.appendChild(this.renderer.domElement);
     }
 
-
     test() {
-        let loader = new Loader();
+        let loader = new LoadingScreen();
         this.loader = new GLTFLoader();
         this.dracoLoader = new DRACOLoader();
         this.dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
@@ -74,9 +87,12 @@ class Game {
     }
 
     update() {
+        const delta = this.clock.getDelta();
         this.animateCamera();
         this.renderer.render(this.scene, this.camera);
         this.controls.update();
+        this.helione.update(delta);
+        this.helitwo.update(delta);
     }
 
     onWindowResize() {

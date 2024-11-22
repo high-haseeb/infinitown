@@ -1,4 +1,4 @@
-class Loader {
+class LoadingScreen {
 
     constructor() {
         this.loader = document.getElementById("loader");
@@ -17,4 +17,4 @@ class Loader {
     }
 }
 
-export default Loader;
+export default LoadingScreen;
