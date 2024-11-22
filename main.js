@@ -3,11 +3,6 @@ import { MapControls } from "three/addons/controls/MapControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { lerp } from "three/src/math/MathUtils";
-// import Stats from "three/examples/jsm/libs/stats.module";
-//
-// TODO:
-// make a traffic light system for the cars
-// make use of random cars in the begining (not the same pattern everytime)
 
 class Game {
     constructor() {
