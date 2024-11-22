@@ -14,21 +14,38 @@ class Helicopter {
         this.loadModel();
     }
 
-    createPath(radius, centerX, centerY, clockwise, heightVariation = 3) {
+    createPath() {
+        let startX = 60;
+        let startY = 23;
+        let startZ = -95;
+        let radiusX = 50; // Horizontal radius
+        let radiusZ = 80; // Vertical radius
+        let minY = 23; // Minimum height
+        let maxY = 40; // Maximum height
+        let numPoints = 30; // Number of points
+        let clockwise = true; // Direction of the ellipse
         const points = [];
-        const numPoints = 50;
+        const heightAmplitude = (maxY - minY) / 2; // Half the height range
+        const centerHeight = (maxY + minY) / 2; // Middle height
 
-        for (let i = 0; i <= numPoints; i++) {
-            let angle = (i / numPoints) * Math.PI * 2; // Angle for the circular path
-            angle = clockwise ? angle: -angle;
-            
-            const x = radius * Math.cos(angle) + centerX + (Math.random()); // X coordinate
-            const z = radius * Math.sin(angle) + centerY + (Math.random()); // Z coordinate
-            const y = Math.cos(angle * 2) * heightVariation + 50; // Height variation
+        // Start point
+        points.push(new THREE.Vector3(startX, startY, startZ));
+
+        for (let i = 1; i <= numPoints; i++) {
+            let angle = (i / numPoints) * Math.PI * 2; // Angle around the ellipse
+            angle = clockwise ? angle : -angle;
+
+            const x = radiusX * Math.cos(angle) + startX - radiusX; // Offset to center on startX
+            const z = radiusZ * Math.sin(angle) + startZ; // Offset to center on startZ
+            const y = Math.sin(angle) + centerHeight;
+
             points.push(new THREE.Vector3(x, y, z));
         }
 
-        return new THREE.CatmullRomCurve3(points, true);
+        // Ensure smooth looping by ending at the start point
+        // points.push(new THREE.Vector3(startX, startY, startZ));
+
+        return new THREE.CatmullRomCurve3(points, true); // Create a closed curve
     }
 
     setColor() {
@@ -37,6 +54,9 @@ class Helicopter {
 
     setupAnimations() {
         this.mixer = new THREE.AnimationMixer(this.model);
+
+        this.mixer.clipAction(this.animations[0]).setEffectiveTimeScale(3.0);
+        this.mixer.clipAction(this.animations[1]).setEffectiveTimeScale(3.0);
         this.mixer.clipAction(this.animations[0]).play();
         this.mixer.clipAction(this.animations[1]).play();
     }
@@ -57,7 +77,9 @@ class Helicopter {
     animate() {
         if (this.model) {
             this.curveProgress += 0.001;
-            if (this.curveProgress > 1) this.curveProgress = 0;
+            if (this.curveProgress > 1) { 
+                this.curveProgress = 0;
+            }
 
             const currentPosition = this.curve.getPointAt(this.curveProgress);
             this.model.position.copy(currentPosition);

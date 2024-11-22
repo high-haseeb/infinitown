@@ -4,26 +4,22 @@ import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 class Lighting {
     constructor(scene, renderer) {
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 10, 7.5);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 1024;
-        directionalLight.shadow.mapSize.height = 1024;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 50;
-        scene.add(directionalLight);
+        this.light = new THREE.DirectionalLight('white', 1);
+        this.light.castShadow = true;
+        this.light.position.set(-10, 4, -10);
+        this.light.lookAt(0, 0, 0);
+        this.light.shadow.mapSize.width = 1024;
+        this.light.shadow.mapSize.height = 1024;
+        this.light.shadow.bias = -0.001;
 
-        const pointLight = new THREE.PointLight(0xffffff, 1, 50);
-        pointLight.position.set(-5, 5, 5);
-        scene.add(pointLight);
+        // let helper = new THREE.DirectionalLightHelper(this.light);
+        // scene.add(helper)
 
-        const hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x444444, 0.5);
-        hemisphereLight.position.set(0, 10, 0);
-        scene.add(hemisphereLight);
-
+        scene.add(this.light.target);
+        scene.add(this.light)
 
         const loader = new RGBELoader();
         loader.load(
@@ -31,7 +27,7 @@ class Lighting {
             (texture) => {
                 texture.mapping = THREE.EquirectangularReflectionMapping;
                 scene.environment = texture;
-                // scene.background = texture;
+                scene.environmentIntensity = 0.3;
                 renderer.toneMapping = THREE.ACESFilmicToneMapping;
                 renderer.toneMappingExposure = 1;
             },
@@ -40,6 +36,11 @@ class Lighting {
                 console.error('Error loading environment map:', error);
             }
         );
+    }
+
+    update(camera, controls) {
+        this.light.target.position.copy(controls.target)
+        this.light.position.x = camera.position.x - 50;
     }
 }
 export default Lighting;
