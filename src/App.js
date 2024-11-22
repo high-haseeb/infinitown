@@ -29,9 +29,6 @@ class Game {
         this.test();
         this.helione = new Helicopter(this.scene, this.loader, 50, 50, -100, 'orange');
         this.helitwo = new Helicopter(this.scene, this.loader, 80, 100, -50, 'yellow', false);
-        this.loadingScreen.hide();
-
-
 
         this.renderer.setAnimationLoop(this.update.bind(this));
         window.addEventListener("resize", this.onWindowResize.bind(this));
