@@ -1,30 +1,24 @@
 import * as THREE from 'three';
 
 class Helicopter {
-    constructor(scene, loader, radius, centerX, centerY, color = 'orange', clockwise = true) {
+    constructor(scene, loader, startX, startZ, radiusX, radiusZ, color = 'orange', speed = 0.001, clockwise = true) {
         this.modelPath = "/models/heli.glb";
         this.color = color;
         this.loader = loader;
+        this.speed = speed;
         this.scene = scene;
         this.model = null;
         this.animations = null;
         this.mixer = null;
-        this.curve = this.createPath(radius, centerX, centerY, clockwise);
+        this.curve = this.createPath(startX, startZ, radiusX, radiusZ, clockwise);
         this.curveProgress = 0;
         this.loadModel();
     }
 
-    createPath() {
-        let startX = 6;
-        let startZ = -9;
-        let radiusX = 5; // Horizontal radius
-        let radiusZ = 8; // Vertical radius
-        let minY = 4; // Minimum height
-        let maxY = 4; // Maximum height
-        let numPoints = 30; // Number of points
-        let clockwise = true; // Direction of the ellipse
+    createPath(startX, startZ, radiusX, radiusZ, clockwise) {
+        const centerHeight = 4;
+        let numPoints = 30;
         const points = [];
-        const centerHeight = (maxY + minY) / 2; // Middle height
 
         for (let i = 0; i < numPoints; i++) {
             let angle = (i / numPoints) * Math.PI * 2;
@@ -47,8 +41,8 @@ class Helicopter {
     setupAnimations() {
         this.mixer = new THREE.AnimationMixer(this.model);
 
-        this.mixer.clipAction(this.animations[0]).setEffectiveTimeScale(3.0);
-        this.mixer.clipAction(this.animations[1]).setEffectiveTimeScale(3.0);
+        this.mixer.clipAction(this.animations[0]).setEffectiveTimeScale(4.0);
+        this.mixer.clipAction(this.animations[1]).setEffectiveTimeScale(4.0);
         this.mixer.clipAction(this.animations[0]).play();
         this.mixer.clipAction(this.animations[1]).play();
     }
@@ -76,12 +70,11 @@ class Helicopter {
         });
         this.animationEnded = false;
         this.goingUp = false;
-        this.step = 0.001;
     }
 
     animate() {
         if (this.model) {
-            if (this.curveProgress > 1 - this.step) {
+            if (this.curveProgress > 1 - this.speed) {
                 this.animationEnded = true;
             }
             if (this.goingUp) {
@@ -108,7 +101,7 @@ class Helicopter {
                 }
             }
             if (!this.animationEnded) {
-                this.curveProgress += this.step;
+                this.curveProgress += this.speed;
                 const currentPosition = this.curve.getPointAt(this.curveProgress);
                 this.model.position.copy(currentPosition);
 

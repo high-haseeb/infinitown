@@ -8,6 +8,7 @@ import VehicleSystem from './VehicleSystem';
 
 import Controls from "./Controls";
 import Helicopter from "./Helicopter";
+import config from "./Config";
 
 class Game {
 
@@ -25,6 +26,20 @@ class Game {
 
         this.controls = new Controls(this.camera, this.renderer);
 
+        this.shouldAnimateCamera = false;
+
+        config.addButton("orbit controls", (s) => {
+            if (s) {
+                this.controls.enableZoom();
+                this.controls.enableRotate();
+                this.shouldAnimateCamera = false;
+            } else {
+                this.controls.disableZoom();
+                this.controls.disableRotate();
+                this.shouldAnimateCamera = true;
+            }
+        });
+
         // gltf draco loader
         this.loader = new GLTFLoader();
         this.loadingScreen = new LoadingScreen();
@@ -34,16 +49,17 @@ class Game {
         this.clock = new THREE.Clock(true);
 
         this.test();
-        //
+
         // this.loadingScreen.hide();
-        this.helione = new Helicopter(this.scene, this.loader, 50, 50, -100, 'orange');
-        // this.helitwo = new Helicopter(this.scene, this.loader, 80, 100, -50, 'yellow', false);
+
+        this.helione = new Helicopter(this.scene, this.loader, 6, -9, 5, 8 , 'orange');
+        this.helitwo = new Helicopter(this.scene, this.loader, 4, 2, 5, 3, 'yellow', 0.002);
         // this.vehicleSystem = new VehicleSystem(this.scene, this.loader);
 
         this.renderer.setAnimationLoop(this.update.bind(this));
 
         window.addEventListener("resize", this.onWindowResize.bind(this));
-        window.addEventListener("wheel", this.zoomHandler.bind(this));
+        window.addEventListener("wheel", this.wheelHandler.bind(this));
         document.addEventListener("touchstart", this.handlePinchStart.bind(this), { passive: false });
         document.addEventListener("touchmove", this.handlePinchChange.bind(this), { passive: false });
         document.addEventListener("touchend", this.handlePinchEnd.bind(this), { passive: false });
@@ -61,6 +77,8 @@ class Game {
     }
 
     animateCamera() {
+        if (!this.shouldAnimateCamera) return;
+
         if (Math.abs(this.camera.zoom - this.zoom) > 0.001) {
             this.camera.zoom = lerp(this.camera.zoom, this.zoom, 0.1);
             this.camera.updateProjectionMatrix();
@@ -96,7 +114,7 @@ class Game {
                         child.material.depthWrite = true;
                     }
                 });
-                glb.scene.scale.set(1/10, 1/10, 1/10);
+                glb.scene.scale.set(1 / 10, 1 / 10, 1 / 10);
 
                 this.scene.add(glb.scene);
                 loader.hide();
@@ -105,7 +123,7 @@ class Game {
             (xhr) => loader.update(xhr),
             (err) => console.error("[ERROR]", err)
         )
-        let temp = 
+        let temp =
             new THREE.Mesh(
                 new THREE.BoxGeometry(),
                 new THREE.MeshNormalMaterial,
@@ -117,11 +135,12 @@ class Game {
 
     update() {
         const delta = this.clock.getDelta();
-        // this.animateCamera();
+        this.animateCamera();
         this.renderer.render(this.scene, this.camera);
         this.controls.update();
-        this.lights.update(this.camera, this.controls.controls);
-        // this.helione.update(delta);
+        // this.lights.update(this.camera, this.controls.controls);
+        this.helione.update(delta);
+        this.helitwo.update(delta);
         // this.vehicleSystem.update();
     }
 
@@ -131,7 +150,7 @@ class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    zoomHandler(event) {
+    wheelHandler(event) {
         const delta = event.deltaY;
         if (delta > 0) {
             this.zoom = this.zoomOutFactor;
