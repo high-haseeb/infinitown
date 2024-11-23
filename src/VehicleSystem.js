@@ -25,13 +25,17 @@ class VehicleSystem {
     constructor({ scene, loader, modelPath, x, y, speed, initDir }) {
         this.scene = scene;
         this.modelPath = modelPath;
-        this.turnRadius = 0.50;
+        this.turnRadius = 0.5;
         this.direction = initDir.clone();
         this.up = new THREE.Vector3(0, 1, 0);
         this.speed = speed;
         this.turnDirection = initDir.clone();
         this.turnCoolOff = true;
         this.turnCoolOffDuration = 500;
+        this.collisionCoolOff = true;
+        this.collisionCoolOffDuration = 400;
+        this.boundingRadius = 0.5; 
+        this.stop = false;
 
         this.inters = [
             new Intersection(this.scene, 0, 0, [Dirs.NORTH, Dirs.EAST]),
@@ -46,9 +50,9 @@ class VehicleSystem {
             new Intersection(this.scene, 18, 0, [Dirs.NORTH, Dirs.EAST, Dirs.WEST]),
             new Intersection(this.scene, 18, -6, [Dirs.SOUTH, Dirs.EAST, Dirs.WEST]),
 
-            new Intersection(this.scene, 24, 0, [Dirs.NORTH]),
+            new Intersection(this.scene, 24, 0, [Dirs.NORTH, Dirs.WEST]),
             new Intersection(this.scene, 24, -6, [Dirs.SOUTH, Dirs.WEST]),
-        ];
+        ]; 
 
         loader.load(modelPath,
             (glb) => {
@@ -59,7 +63,26 @@ class VehicleSystem {
                 scene.add(this.car);
             }
         );
+    }
 
+    checkCollisionWithVehicles(vehicles) {
+        if (!this.collisionCoolOff) return;
+
+        vehicles.forEach(otherVehicle => {
+            if (otherVehicle === this || !otherVehicle.car) return;
+
+            const distance = this.car.position.distanceTo(otherVehicle.car.position);
+
+            // If too close, apply collision avoidance
+            if (distance < this.boundingRadius + otherVehicle.boundingRadius) {
+                console.log(`${this.modelPath}: Avoiding collision with ${otherVehicle.modelPath}`);
+
+                this.turnDirection.copy(this.turnDirection.clone().negate())
+
+                this.collisionCoolOff = false;
+                setTimeout(() => this.collisionCoolOff = true, this.collisionCoolOffDuration);
+            }
+        });
     }
 
     checkCollision() {
@@ -69,11 +92,8 @@ class VehicleSystem {
         this.inters.forEach((inter, index) => {
             let squareDist = Math.pow((carX - inter.x), 2) + Math.pow((carZ - inter.z), 2);
             if (squareDist < 0.3 && this.turnCoolOff) {
-
                 let validDirs = inter.turnDir.filter(dir => {
-                    return !(
-                        (this.turnDirection.x === -dir.x && this.turnDirection.z === -dir.z)
-                    );
+                    return !(this.turnDirection.x === -dir.x && this.turnDirection.z === -dir.z);
                 });
 
                 if (validDirs.length > 0) {
@@ -84,19 +104,18 @@ class VehicleSystem {
                     console.warn(`No valid turn directions at intersection ${index}`);
                 }
 
-                // debounce prevention
                 this.turnCoolOff = false;
                 setTimeout(() => this.turnCoolOff = true, this.turnCoolOffDuration);
             }
-        })
+        });
     }
 
-    update() {
+    update(vehicles) {
         if (!this.car) return;
 
         this.checkCollision();
+        this.checkCollisionWithVehicles(vehicles);
 
-        // Strictly move along the current direction
         const moveVector = this.turnDirection.clone().multiplyScalar(this.speed);
         this.car.position.add(moveVector);
         this.direction.lerp(this.turnDirection, this.turnRadius);
@@ -106,7 +125,6 @@ class VehicleSystem {
             this.direction.normalize()
         );
         this.car.rotation.setFromQuaternion(q);
-
     }
 }
 

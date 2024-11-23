@@ -8,6 +8,7 @@ import { VehicleSystem, Dirs } from './VehicleSystem';
 
 import Controls from "./Controls";
 import Helicopter from "./Helicopter";
+import Icons from "./Icons";
 import config from "./Config";
 
 class Game {
@@ -38,6 +39,7 @@ class Game {
                 this.shouldAnimateCamera = true;
             }
         });
+
 
         // gltf draco loader
         this.loader = new GLTFLoader();
@@ -84,43 +86,96 @@ class Game {
             new VehicleSystem({
                 scene: this.scene,
                 loader: this.loader,
-                modelPath: '/cars/bus_1.glb',
+                modelPath: '/cars/ambulance.glb',
                 x: 0,
-                y: 0.4,
+                y: 0,
                 initDir: Dirs.NORTH.clone(),
                 speed: 0.03
             }),
-
             new VehicleSystem({
                 scene: this.scene,
                 loader: this.loader,
-                modelPath: '/cars/suv_2.glb',
-                x: 4,
-                y: -6.4,
+                modelPath: '/cars/bus_1.glb',
+                x: 0,
+                y: -6,
                 initDir: Dirs.EAST.clone(),
                 speed: 0.05
             }),
-
             new VehicleSystem({
                 scene: this.scene,
                 loader: this.loader,
-                modelPath: '/cars/ambulance.glb',
-                x: 10,
-                y: -6.4,
-                initDir: Dirs.EAST.clone(),
-                speed: 0.05
+                modelPath: '/cars/bus_2.glb',
+                x: 6,
+                y: 0,
+                initDir: Dirs.WEST.clone(),
+                speed: 0.04
             }),
-
             new VehicleSystem({
                 scene: this.scene,
                 loader: this.loader,
-                modelPath: '/cars/truck_1.glb',
+                modelPath: '/cars/bus_3.glb',
+                x: 6,
+                y: -6,
+                initDir: Dirs.SOUTH.clone(),
+                speed: 0.045
+            }),
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/car_1.glb',
                 x: 12,
-                y: 0.4,
+                y: 0,
                 initDir: Dirs.EAST.clone(),
+                speed: 0.035
+            }),
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/car_2.glb',
+                x: 12,
+                y: -6,
+                initDir: Dirs.SOUTH.clone(),
+                speed: 0.04
+            }),
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/car_3.glb',
+                x: 18,
+                y: 0,
+                initDir: Dirs.NORTH.clone(),
                 speed: 0.05
             }),
-        ]
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/car_4.glb',
+                x: 18,
+                y: -6,
+                initDir: Dirs.WEST.clone(),
+                speed: 0.045
+            }),
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/container_1.glb',
+                x: 24,
+                y: 0,
+                initDir: Dirs.NORTH.clone(),
+                speed: 0.03
+            }),
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/container_2.glb',
+                x: 24,
+                y: -6,
+                initDir: Dirs.WEST.clone(),
+                speed: 0.04
+            }),
+        ];
+
+        this.icons = new Icons(this.scene, this.loader, this.camera, this.renderer);
 
         this.renderer.setAnimationLoop(this.update.bind(this));
 
@@ -164,10 +219,6 @@ class Game {
 
     test() {
         let loader = new LoadingScreen();
-        this.loader = new GLTFLoader();
-        this.dracoLoader = new DRACOLoader();
-        this.dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
-        this.loader.setDRACOLoader(this.dracoLoader);
 
         this.loader.load(
             "/models/city.glb",
@@ -204,10 +255,11 @@ class Game {
         this.animateCamera();
         this.renderer.render(this.scene, this.camera);
         this.controls.update();
+        this.icons.update();
         // this.lights.update(this.camera, this.controls.controls);
         this.heliONE.update(delta);
         this.heliTWO.update(delta);
-        this.cars.forEach(car => car.update());
+        this.cars.forEach(car => car.update(this.cars));
     }
 
     onWindowResize() {
