@@ -4,7 +4,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import LoadingScreen from "./LoadingScreen";
 import Lighting from "./Lighting";
 import { lerp } from "three/src/math/MathUtils";
-import VehicleSystem from './VehicleSystem';
+import { VehicleSystem, Intersection, Dirs } from './VehicleSystem';
 
 import Controls from "./Controls";
 import Helicopter from "./Helicopter";
@@ -13,7 +13,6 @@ import config from "./Config";
 class Game {
 
     constructor() {
-
         this.zoom = 1;
         this.zooming = true;
         this.zoomInFactor = 3.0;
@@ -50,11 +49,41 @@ class Game {
 
         this.test();
 
-        // this.loadingScreen.hide();
+        this.loadingScreen.hide();
 
-        this.helione = new Helicopter(this.scene, this.loader, 6, -9, 5, 8 , 'orange');
-        this.helitwo = new Helicopter(this.scene, this.loader, 4, 2, 5, 3, 'yellow', 0.002);
-        // this.vehicleSystem = new VehicleSystem(this.scene, this.loader);
+        this.heliONE = new Helicopter(
+            {
+                scene: this.scene,
+                loader: this.loader,
+                startX: 6,
+                startZ: -9,
+                radiusX: 5,
+                radiusZ: 8,
+                color: 'orange',
+                height: 2.2,
+                clockwise: true,
+                speed:  0.001,
+            }
+        );
+
+        this.heliTWO = new Helicopter(
+            {
+                scene: this.scene,
+                loader: this.loader,
+                startX: 4,
+                startZ: 2,
+                radiusX: 5,
+                radiusZ: 3,
+                color: 'yellow',
+                height: 1,
+                clockwise: false,
+                speed: 0.003,
+            }
+        );
+
+
+        this.carONE = new VehicleSystem({ scene: this.scene, loader: this.loader, modelPath: '/cars/suv_1.glb', x: 0, y: 0, speed: 0.01 });
+        this.carTWO = new VehicleSystem({ scene: this.scene, loader: this.loader, modelPath: '/cars/suv_2.glb', x: 0, y: -6, speed: 0.05 });
 
         this.renderer.setAnimationLoop(this.update.bind(this));
 
@@ -139,9 +168,10 @@ class Game {
         this.renderer.render(this.scene, this.camera);
         this.controls.update();
         // this.lights.update(this.camera, this.controls.controls);
-        this.helione.update(delta);
-        this.helitwo.update(delta);
-        // this.vehicleSystem.update();
+        this.heliONE.update(delta);
+        this.heliTWO.update(delta);
+        this.carONE.update();
+        this.carTWO.update();
     }
 
     onWindowResize() {

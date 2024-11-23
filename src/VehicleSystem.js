@@ -1,57 +1,116 @@
 import * as THREE from 'three';
 
-class VehicleSystem {
+class Intersection {
+    constructor(scene, x, z, turnDir) {
+        this.x = x;
+        this.z = z;
+        this.turnDir = turnDir;
+        this.visual = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshNormalMaterial(),
+        );
+        this.visual.position.set(x, 0.5, z);
+        // scene.add(this.visual);
+    }
+}
 
-    constructor(scene, loader) {
+export const Dirs = {
+    NORTH: new THREE.Vector3(0, 0, -1),
+    SOUTH: new THREE.Vector3(0, 0, 1),
+    EAST: new THREE.Vector3(1, 0, 0),
+    WEST: new THREE.Vector3(-1, 0, 0),
+}
+
+class VehicleSystem {
+    constructor({ scene, loader, modelPath, x, y, speed }) {
         this.scene = scene;
+        this.inters = [
+            new Intersection(this.scene, 0, 0, [Dirs.NORTH, Dirs.EAST]),
+            new Intersection(this.scene, 0, -6, [Dirs.EAST, Dirs.SOUTH /* Dirs.NORTH */]),
+
+            new Intersection(this.scene, 6, 0, [Dirs.NORTH, Dirs.EAST, Dirs.WEST]),
+            new Intersection(this.scene, 6, -6, [Dirs.SOUTH, Dirs.WEST, Dirs.SOUTH]),
+
+            new Intersection(this.scene, 12, 0, [Dirs.NORTH, Dirs.EAST, Dirs.WEST]),
+            new Intersection(this.scene, 12, -6, [Dirs.SOUTH, Dirs.EAST]),
+
+            new Intersection(this.scene, 18, 0, [Dirs.NORTH, Dirs.EAST, Dirs.WEST]),
+            new Intersection(this.scene, 18, -6, [Dirs.SOUTH, Dirs.EAST, Dirs.WEST]),
+
+            new Intersection(this.scene, 24, 0, [Dirs.NORTH]),
+            new Intersection(this.scene, 24, -6, [Dirs.SOUTH, Dirs.WEST]),
+        ]
+        this.modelPath = modelPath;
+        this.turnRadius = 1.0;
         this.direction = new THREE.Vector3(1, 0, 0);
         this.up = new THREE.Vector3(0, 1, 0);
 
-        // this.car = new THREE.Mesh(
-        //     new THREE.BoxGeometry(2, 1, 1),
-        //     new THREE.MeshNormalMaterial(),
-        // ).translateY(0.5);
-
-        loader.load("/cars/suv_1.glb",
+        loader.load(modelPath,
             (glb) => {
                 this.car = glb.scene;
-                scene.add(this.car)
+                this.car.scale.set(1 / 10, 1 / 10, 1 / 10);
+                scene.add(this.car);
+                this.car.position.x = x;
+                this.car.position.z = y;
 
-                this.carSize = new THREE.Vector3();
-                const carBox = new THREE.Box3().setFromObject(this.car);
-                carBox.getSize(this.carSize);
+                // this.carSize = new THREE.Vector3();
+                // const carBox = new THREE.Box3().setFromObject(this.car);
+                // carBox.getSize(this.carSize);
             }
         );
 
-        this.ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(10, 10),
-            new THREE.MeshBasicMaterial({ color: "green" }),
-        ).rotateX(-Math.PI / 2);
+        this.speed = speed;
+        this.turnDirection = Dirs.NORTH;
+        this.turnCoolOff = true;
+        this.turnCoolOffDuration = 1000;
+    }
 
+    checkCollision() {
+        let carX = this.car.position.x;
+        let carZ = this.car.position.z;
 
-        this.groundSize = new THREE.Vector3();
-        const groundBox = new THREE.Box3().setFromObject(this.ground);
-        groundBox.getSize(this.groundSize);
+        this.inters.forEach((inter, index) => {
+            let squareDist = Math.pow((carX - inter.x), 2) + Math.pow((carZ - inter.z), 2);
+            if (squareDist < 0.1 && this.turnCoolOff) {
 
+                let validDirs = inter.turnDir.filter(dir => {
+                    return !(
+                        (this.turnDirection.x === -dir.x && this.turnDirection.z === -dir.z)
+                    );
+                });
 
-        this.scene.add(this.ground);
-        this.speed = 0.05;
-        this.turnDirection = new THREE.Vector3(0, 0, 1).normalize();
+                if (validDirs.length > 0) {
+                    // Choose a random valid direction
+                    let newDir = validDirs[Math.floor(Math.random() * validDirs.length)];
+                    console.log(`${this.modelPath}: Direction updated: ${this.turnDirection.toArray()} -> ${newDir.toArray()}`);
+                    this.turnDirection.copy(newDir);
+                } else {
+                    console.warn(`No valid turn directions at intersection ${index}`);
+                }
+
+                // debounce prevention
+                this.turnCoolOff = false;
+                setTimeout(() => this.turnCoolOff = true, this.turnCoolOffDuration);
+            }
+        })
     }
 
     update() {
         if (!this.car) return;
-        this.direction.lerp(this.turnDirection, 0.01);
 
-        this.car.position.add(this.direction.clone().multiplyScalar(this.speed));
-        const q = new THREE.Quaternion().setFromUnitVectors(this.up, this.direction);
-        // this.car.rotation.setFromQuaternion(q);
+        this.checkCollision();
 
-        // reset the car
-        if (this.car.position.x - this.carSize.x / 2 > this.groundSize.x / 2) {
-            this.car.position.x = - this.groundSize.x / 2 + this.carSize.x / 2;
-        }
+        // Strictly move along the current direction
+        const moveVector = this.turnDirection.clone().multiplyScalar(this.speed);
+        this.car.position.add(moveVector);
+
+        const q = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(-1, 0, 0),
+            this.turnDirection.normalize()
+        );
+        this.car.rotation.setFromQuaternion(q);
+
     }
 }
 
-export default VehicleSystem;
+export { Intersection, VehicleSystem };

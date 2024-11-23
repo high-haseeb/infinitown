@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 
 class Helicopter {
-    constructor(scene, loader, startX, startZ, radiusX, radiusZ, color = 'orange', speed = 0.001, clockwise = true) {
+    constructor({ scene, loader, startX, startZ, radiusX, radiusZ, color = 'orange', speed = 0.001, clockwise = true, height }) {
         this.modelPath = "/models/heli.glb";
         this.color = color;
         this.loader = loader;
         this.speed = speed;
         this.scene = scene;
+        this.height = height;
         this.model = null;
         this.animations = null;
         this.mixer = null;
@@ -89,7 +90,7 @@ class Helicopter {
                 }
             }
             if (this.animationEnded && !this.goingUp) {
-                if (this.model.position.y > 2.2) {
+                if (this.model.position.y > this.height) {
                     this.model.position.y -= 0.01;
                     if (this.model.position.y < 2.2) {
                         this.stopAnimations();
