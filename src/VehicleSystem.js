@@ -22,8 +22,17 @@ export const Dirs = {
 }
 
 class VehicleSystem {
-    constructor({ scene, loader, modelPath, x, y, speed }) {
+    constructor({ scene, loader, modelPath, x, y, speed, initDir }) {
         this.scene = scene;
+        this.modelPath = modelPath;
+        this.turnRadius = 0.50;
+        this.direction = initDir.clone();
+        this.up = new THREE.Vector3(0, 1, 0);
+        this.speed = speed;
+        this.turnDirection = initDir.clone();
+        this.turnCoolOff = true;
+        this.turnCoolOffDuration = 500;
+
         this.inters = [
             new Intersection(this.scene, 0, 0, [Dirs.NORTH, Dirs.EAST]),
             new Intersection(this.scene, 0, -6, [Dirs.EAST, Dirs.SOUTH /* Dirs.NORTH */]),
@@ -39,30 +48,18 @@ class VehicleSystem {
 
             new Intersection(this.scene, 24, 0, [Dirs.NORTH]),
             new Intersection(this.scene, 24, -6, [Dirs.SOUTH, Dirs.WEST]),
-        ]
-        this.modelPath = modelPath;
-        this.turnRadius = 1.0;
-        this.direction = new THREE.Vector3(1, 0, 0);
-        this.up = new THREE.Vector3(0, 1, 0);
+        ];
 
         loader.load(modelPath,
             (glb) => {
                 this.car = glb.scene;
                 this.car.scale.set(1 / 10, 1 / 10, 1 / 10);
-                scene.add(this.car);
                 this.car.position.x = x;
                 this.car.position.z = y;
-
-                // this.carSize = new THREE.Vector3();
-                // const carBox = new THREE.Box3().setFromObject(this.car);
-                // carBox.getSize(this.carSize);
+                scene.add(this.car);
             }
         );
 
-        this.speed = speed;
-        this.turnDirection = Dirs.NORTH;
-        this.turnCoolOff = true;
-        this.turnCoolOffDuration = 1000;
     }
 
     checkCollision() {
@@ -71,7 +68,7 @@ class VehicleSystem {
 
         this.inters.forEach((inter, index) => {
             let squareDist = Math.pow((carX - inter.x), 2) + Math.pow((carZ - inter.z), 2);
-            if (squareDist < 0.1 && this.turnCoolOff) {
+            if (squareDist < 0.3 && this.turnCoolOff) {
 
                 let validDirs = inter.turnDir.filter(dir => {
                     return !(
@@ -80,7 +77,6 @@ class VehicleSystem {
                 });
 
                 if (validDirs.length > 0) {
-                    // Choose a random valid direction
                     let newDir = validDirs[Math.floor(Math.random() * validDirs.length)];
                     console.log(`${this.modelPath}: Direction updated: ${this.turnDirection.toArray()} -> ${newDir.toArray()}`);
                     this.turnDirection.copy(newDir);
@@ -103,10 +99,11 @@ class VehicleSystem {
         // Strictly move along the current direction
         const moveVector = this.turnDirection.clone().multiplyScalar(this.speed);
         this.car.position.add(moveVector);
+        this.direction.lerp(this.turnDirection, this.turnRadius);
 
         const q = new THREE.Quaternion().setFromUnitVectors(
             new THREE.Vector3(-1, 0, 0),
-            this.turnDirection.normalize()
+            this.direction.normalize()
         );
         this.car.rotation.setFromQuaternion(q);
 

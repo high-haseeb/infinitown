@@ -51,5 +51,6 @@ class Config {
 }
 
 const config = new Config();
+config.hide();
 
 export default config;

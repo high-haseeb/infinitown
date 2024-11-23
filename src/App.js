@@ -4,7 +4,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import LoadingScreen from "./LoadingScreen";
 import Lighting from "./Lighting";
 import { lerp } from "three/src/math/MathUtils";
-import { VehicleSystem, Intersection, Dirs } from './VehicleSystem';
+import { VehicleSystem, Dirs } from './VehicleSystem';
 
 import Controls from "./Controls";
 import Helicopter from "./Helicopter";
@@ -49,8 +49,6 @@ class Game {
 
         this.test();
 
-        this.loadingScreen.hide();
-
         this.heliONE = new Helicopter(
             {
                 scene: this.scene,
@@ -62,7 +60,7 @@ class Game {
                 color: 'orange',
                 height: 2.2,
                 clockwise: true,
-                speed:  0.001,
+                speed: 0.001,
             }
         );
 
@@ -75,15 +73,54 @@ class Game {
                 radiusX: 5,
                 radiusZ: 3,
                 color: 'yellow',
-                height: 1,
+                height: 2.0,
                 clockwise: false,
                 speed: 0.003,
             }
         );
 
 
-        this.carONE = new VehicleSystem({ scene: this.scene, loader: this.loader, modelPath: '/cars/suv_1.glb', x: 0, y: 0, speed: 0.01 });
-        this.carTWO = new VehicleSystem({ scene: this.scene, loader: this.loader, modelPath: '/cars/suv_2.glb', x: 0, y: -6, speed: 0.05 });
+        this.cars = [
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/bus_1.glb',
+                x: 0,
+                y: 0.4,
+                initDir: Dirs.NORTH.clone(),
+                speed: 0.03
+            }),
+
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/suv_2.glb',
+                x: 4,
+                y: -6.4,
+                initDir: Dirs.EAST.clone(),
+                speed: 0.05
+            }),
+
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/ambulance.glb',
+                x: 10,
+                y: -6.4,
+                initDir: Dirs.EAST.clone(),
+                speed: 0.05
+            }),
+
+            new VehicleSystem({
+                scene: this.scene,
+                loader: this.loader,
+                modelPath: '/cars/truck_1.glb',
+                x: 12,
+                y: 0.4,
+                initDir: Dirs.EAST.clone(),
+                speed: 0.05
+            }),
+        ]
 
         this.renderer.setAnimationLoop(this.update.bind(this));
 
@@ -170,8 +207,7 @@ class Game {
         // this.lights.update(this.camera, this.controls.controls);
         this.heliONE.update(delta);
         this.heliTWO.update(delta);
-        this.carONE.update();
-        this.carTWO.update();
+        this.cars.forEach(car => car.update());
     }
 
     onWindowResize() {

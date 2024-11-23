@@ -97,7 +97,7 @@ class Helicopter {
                         setTimeout(() => {
                             this.startAnimations();
                             this.goingUp = true;
-                        }, 1000);
+                        }, 1000 * 1000 * this.speed * 2);
                     }
                 }
             }
